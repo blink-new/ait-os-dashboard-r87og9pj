@@ -31,10 +31,16 @@ export function TeamMembers({ members }: TeamMembersProps) {
 
   const getRoleColor = (role: string) => {
     switch (role.toLowerCase()) {
+      case 'ceo':
+        return 'bg-purple-100 text-purple-800'
+      case 'cto':
+        return 'bg-blue-100 text-blue-800'
+      case 'full stack developer':
+        return 'bg-green-100 text-green-800'
+      case 'sales & marketing':
+        return 'bg-orange-100 text-orange-800'
       case 'team leader':
         return 'bg-purple-100 text-purple-800'
-      case 'coo & cto':
-        return 'bg-blue-100 text-blue-800'
       case 'developer':
         return 'bg-green-100 text-green-800'
       default:

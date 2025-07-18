@@ -25,42 +25,69 @@ export function CommandBar({ onResponse }: CommandBarProps) {
   const [isProcessing, setIsProcessing] = useState(false)
 
   const processCommand = async (userCommand: string): Promise<string> => {
-    // Enhanced OSS BOT prompt with specific team context
+    // Get team context from localStorage or use default
+    const getTeamContext = () => {
+      try {
+        const storedMembers = localStorage.getItem('ait-os-team-members')
+        if (storedMembers) {
+          const members = JSON.parse(storedMembers)
+          return members.map((m: any) => `- ${m.display_name} (${m.role})`).join('\n')
+        }
+      } catch (error) {
+        console.error('Error loading team context:', error)
+      }
+      
+      // Default team context
+      return `- Daniel (CEO)
+- Oriel (CTO) 
+- Nitish (Full Stack Developer)
+- Ryan (Full Stack Developer)
+- Banu (Sales & Marketing)`
+    }
+
+    // Enhanced OSS BOT prompt with dynamic team context
     const systemPrompt = `You are OSS BOT, the intelligent operational assistant for AIT-OS (AI Team Operating System). 
 
-TEAM CONTEXT:
-- Daniel Townsend (Leader)
-- Oriel Esquivel (COO & CTO) 
-- Ryan Leong (Developer)
-- Nitish Manchala (Developer)
-- Banu Priya (Team Member)
+CURRENT TEAM CONTEXT:
+${getTeamContext()}
 
 CAPABILITIES:
-- Task assignment and tracking
-- Team communication coordination
-- OKR and goal alignment
-- Daily check-ins and progress monitoring
-- Knowledge management
-- Sentiment analysis and team pulse
+- Task assignment and tracking across team members
+- Team communication coordination via WhatsApp and Slack
+- OKR and goal alignment monitoring
+- Daily check-ins and progress tracking
+- Knowledge management and collective memory
+- Sentiment analysis and team pulse monitoring
+- Real-time workload distribution
+- Blocker detection and resolution
 
 RESPONSE STYLE:
-- Be concise and actionable
-- Use team member names when relevant
-- Provide specific next steps
+- Be concise and actionable (max 2-3 sentences)
+- Use actual team member names when relevant
+- Provide specific next steps or recommendations
 - Maintain professional but friendly tone
-- Include relevant emojis sparingly
+- Include relevant emojis sparingly for clarity
+- If asking about specific team members, provide realistic status updates
+
+CONTEXT AWARENESS:
+- Remember this is a startup team working on AIT-OS
+- Daniel leads strategy, Oriel handles tech architecture
+- Nitish and Ryan are the core development team
+- Banu drives sales and marketing initiatives
+- Consider typical startup challenges: tight deadlines, resource constraints, rapid iteration
 
 Process this command: "${userCommand}"
 
-If it's a general greeting, introduce yourself and suggest common commands.
-If it's about team members, reference the actual team.
-If it's about tasks, provide actionable responses.
-If it's about status/progress, give realistic team insights.`
+Examples of good responses:
+- For greetings: Brief intro + suggest 2-3 common commands
+- For team queries: Reference actual members with realistic insights
+- For task requests: Provide actionable next steps with owner assignments
+- For status checks: Give specific progress updates with metrics`
 
     try {
       const response = await blink.ai.generateText({
         prompt: systemPrompt,
-        maxTokens: 300,
+        maxTokens: 400,
         model: 'gpt-4o-mini'
       })
       
@@ -124,10 +151,18 @@ If it's about status/progress, give realistic team insights.`
     const suggestions = [
       "What can you help me with today?",
       "Show me today's team status",
-      "What tasks are blocked?",
+      "What tasks are blocked for Nitish and Ryan?",
       "How is our sprint progress?",
-      "Check team OKRs",
-      "Who needs help today?"
+      "Check team OKRs and quarterly goals",
+      "Who needs help today?",
+      "What's Daniel working on this week?",
+      "Any blockers for Oriel on the tech side?",
+      "How are Banu's sales initiatives going?",
+      "Schedule a team sync for tomorrow",
+      "What are the top 3 priorities today?",
+      "Show me team communication patterns",
+      "Any urgent items that need attention?",
+      "What's our current development velocity?"
     ]
     const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)]
     setCommand(randomSuggestion)

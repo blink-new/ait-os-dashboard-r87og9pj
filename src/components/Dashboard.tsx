@@ -27,30 +27,46 @@ interface TeamMember {
   status: string
 }
 
-// Mock team data for demonstration
+// Team data based on requirements
 const MOCK_TEAM_MEMBERS: TeamMember[] = [
   {
-    id: 'mock-1',
-    user_id: 'mock-user-1',
-    email: 'oriel@ait-os.com',
-    display_name: 'Oriel',
-    role: 'Team Leader',
-    status: 'active'
-  },
-  {
-    id: 'mock-2',
-    user_id: 'mock-user-2',
-    email: 'nitish@ait-os.com',
-    display_name: 'Nitish',
-    role: 'Developer',
-    status: 'active'
-  },
-  {
-    id: 'mock-3',
-    user_id: 'mock-user-3',
+    id: 'daniel-ceo',
+    user_id: 'daniel-ceo',
     email: 'daniel@ait-os.com',
     display_name: 'Daniel',
-    role: 'COO & CTO',
+    role: 'CEO',
+    status: 'active'
+  },
+  {
+    id: 'oriel-cto',
+    user_id: 'oriel-cto',
+    email: 'oriel@ait-os.com',
+    display_name: 'Oriel',
+    role: 'CTO',
+    status: 'active'
+  },
+  {
+    id: 'nitish-fullstack',
+    user_id: 'nitish-fullstack',
+    email: 'nitish@ait-os.com',
+    display_name: 'Nitish',
+    role: 'Full Stack Developer',
+    status: 'active'
+  },
+  {
+    id: 'ryan-fullstack',
+    user_id: 'ryan-fullstack',
+    email: 'ryan@ait-os.com',
+    display_name: 'Ryan',
+    role: 'Full Stack Developer',
+    status: 'active'
+  },
+  {
+    id: 'banu-sales',
+    user_id: 'banu-sales',
+    email: 'banu@ait-os.com',
+    display_name: 'Banu',
+    role: 'Sales & Marketing',
     status: 'active'
   }
 ]
@@ -136,19 +152,55 @@ export function Dashboard() {
       return
     }
 
-    // Simulate command processing for other modules
+    // Enhanced module processing with team context awareness
     try {
       const teamContext = teamMembers.map(member => 
-        `- ${member.display_name} (${member.role})`
+        `- ${member.display_name} (${member.role}) - Status: ${member.status}`
       ).join('\n')
 
-      const response = await blink.ai.generateText({
-        prompt: `You are OSS BOT for AIT-OS. Context: User clicked "${moduleId}" module. ${prompt}
+      // Get current time context
+      const now = new Date()
+      const timeContext = `Current time: ${now.toLocaleString()}, ${now.toLocaleDateString('en-US', { weekday: 'long' })}`
 
-TEAM CONTEXT:
+      // Module-specific context
+      const getModuleContext = (moduleId: string) => {
+        switch (moduleId) {
+          case 'daily-ops':
+            return 'Focus on today\'s blockers, urgent tasks, and immediate action items. Provide specific team member assignments.'
+          case 'okr-tracker':
+            return 'Show progress on quarterly objectives and key results. Reference specific team member contributions and upcoming milestones.'
+          case 'team-pulse':
+            return 'Analyze team engagement, communication patterns, and potential issues. Suggest interventions if needed.'
+          case 'knowledge-hub':
+            return 'Provide access to team knowledge, recent decisions, and documentation. Suggest relevant resources.'
+          case 'tech-sync':
+            return 'Focus on development progress, technical blockers, and engineering updates. Reference Oriel, Nitish, and Ryan specifically.'
+          case 'gtm-ops':
+            return 'Coordinate go-to-market activities, sales pipeline, and operational tasks. Reference Daniel and Banu specifically.'
+          default:
+            return 'Provide relevant insights and actionable recommendations for this module.'
+        }
+      }
+
+      const response = await blink.ai.generateText({
+        prompt: `You are OSS BOT for AIT-OS. User clicked "${moduleId}" module.
+
+${timeContext}
+
+CURRENT TEAM CONTEXT:
 ${teamContext}
 
-Provide a contextual response for this module with realistic team insights, actionable items, and relevant data points. Be specific and actionable.`,
+MODULE FOCUS: ${getModuleContext(moduleId)}
+
+TASK: ${prompt}
+
+Provide a realistic, actionable response with:
+1. Specific insights relevant to this module
+2. Team member assignments or mentions where appropriate
+3. Concrete next steps or recommendations
+4. Realistic data points or status updates
+
+Keep response concise (2-3 sentences) but highly specific and actionable.`,
         maxTokens: 400,
         model: 'gpt-4o-mini'
       })
@@ -169,11 +221,11 @@ Provide a contextual response for this module with realistic team insights, acti
     } catch (error) {
       console.error('Module processing error:', error)
       
-      // Fallback response if AI fails
+      // Enhanced fallback response with team context
       const fallbackResponse: CommandResponse = {
         id: Date.now().toString(),
         command: `[${moduleId.toUpperCase()}] ${prompt}`,
-        response: `OSS BOT is currently processing your request for the ${moduleId} module. This feature provides insights into ${prompt.toLowerCase()}. Please check back shortly for detailed analytics and recommendations.`,
+        response: `OSS BOT is analyzing ${moduleId} data for the team. Based on current team structure (Daniel-CEO, Oriel-CTO, Nitish & Ryan-Developers, Banu-Sales), I'm preparing insights for ${prompt.toLowerCase()}. Please try again in a moment for detailed recommendations.`,
         timestamp: Date.now()
       }
       
